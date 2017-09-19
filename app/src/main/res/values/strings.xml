@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Stadtbaum</string>
+    <string name="start_ble_search">Searching for beacons...</string>
+    <string name="found_device_page_loading">Loading beacon information...</string>
 </resources>

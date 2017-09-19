@@ -1,0 +1,8 @@
+{
+  "known_devices": [
+    {
+      "address": "dummy-ble-device-address",
+      "display_url": "http://dst.at/"
+    }
+  ]
+}

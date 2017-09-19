@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:theme="@style/Theme.AppCompat.NoActionBar"
     tools:context="com.laurenzfiala.stadtbaum.MainActivity">
 
     <RelativeLayout
-        android:layout_width="0dp"
-        android:layout_height="495dp"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="8dp"
+        tools:layout_editor_absoluteY="8dp">
 
         <WebView
             android:id="@+id/panel_display"
@@ -21,8 +24,9 @@
 
         <FrameLayout
             android:id="@+id/panel_loading"
-            android:layout_width="368dp"
-            android:layout_height="495dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
             tools:layout_editor_absoluteX="8dp"
             tools:layout_editor_absoluteY="8dp">
 
@@ -31,8 +35,9 @@
                 android:layout_width="@dimen/loading_dimensions"
                 android:layout_height="@dimen/loading_dimensions"
                 android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:backgroundTintMode="src_over" />
         </FrameLayout>
     </RelativeLayout>
 
-</android.support.constraint.ConstraintLayout>
+</android.support.design.widget.CoordinatorLayout>
