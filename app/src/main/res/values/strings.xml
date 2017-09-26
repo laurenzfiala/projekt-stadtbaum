@@ -1,5 +1,14 @@
 <resources>
-    <string name="app_name">Stadtbaum</string>
-    <string name="start_ble_search">Searching for beacons...</string>
+    <string name="app_name">Project Urban Tree</string>
+    <string name="start_ble_search">Searching for beacons nearby...</string>
     <string name="found_device_page_loading">Loading beacon information...</string>
+    <string name="intro_sponsored_by">Sponsored by</string>
+    <string name="permreq_explanation">Please allow this app to access and control low accuracy location while opened.\nIf you don\'t, this app can\'t function.</string>
+    <string name="permreq_btn_yes">Allow Location</string>
+    <string name="close_app">Close App</string>
+    <string name="error_no_ble">Your device does not support Bluetooth.\nUnfortunately this app can\'t be used without Bluetooth.</string>
+    <string name="error_jsonfetch">The webpage for the beacon could not be found.</string>
+    <string name="error_no_internet">No internet connection is available.\nTurn on WIFI or data service to continue.</string>
+    <string name="retry">Retry</string>
+    <string name="info_stop_scan_ble_off">Stopped scanning for beacons because Bluetooth has been turned off.</string>
 </resources>

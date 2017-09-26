@@ -6,7 +6,7 @@
     android:id="@+id/layout_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:theme="@style/Theme.AppCompat.NoActionBar"
+    android:theme="@style/Theme.AppCompat.Light"
     tools:context="com.laurenzfiala.stadtbaum.MainActivity">
 
     <RelativeLayout
@@ -22,22 +22,27 @@
             tools:layout_editor_absoluteX="8dp"
             tools:layout_editor_absoluteY="8dp" />
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/panel_loading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorPrimary"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp">
+            android:background="@android:color/background_light"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="vertical">
 
             <ProgressBar
+                android:id="@+id/loadingSpinner"
                 style="?android:attr/progressBarStyle"
                 android:layout_width="@dimen/loading_dimensions"
                 android:layout_height="@dimen/loading_dimensions"
+                android:layout_marginBottom="@dimen/default_margin"
                 android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_weight="1"
-                android:backgroundTintMode="src_over" />
-        </FrameLayout>
+                android:layout_weight="0"
+                android:indeterminateTint="@color/colorPrimaryDark"
+                android:indeterminateTintMode="multiply" />
+
+        </LinearLayout>
+
     </RelativeLayout>
 
 </android.support.design.widget.CoordinatorLayout>

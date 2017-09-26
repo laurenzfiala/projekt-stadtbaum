@@ -9,27 +9,42 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.JsonReader;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -42,32 +57,41 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * TODO jdoc
+ * This is the main screen of the app.
+ * It loads the device mapping (for beacons) and shows the corresponding webpage in a webview.
  * TODO cleanup
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final int REQUEST_ENABLE_BT = 1;
-    private static final int REQUEST_ENABLE_LOCATION = 2;
-    //private static final int BT_SCAN_TIMEOUT = 60000;
-
-    private static final int REQUEST_PERMISSIONS = 3;
-    private static final String[] NEEDED_PERMISSIONS = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION};
-
-    private static final String DEVICE_MAPPING_URL = "https://gist.githubusercontent.com/laurenzfiala/9d1993c5387e07c6d5b97d9743d8d40b/raw/1a56548b6ebb757b150da0a7b607b1d40d46dc07/stadtbaum.json";
-
-    private WebView webView;
-    private FrameLayout loadingPanel;
-    private BluetoothAdapter bluetoothAdapter;
+    /**
+     * See {@link BluetoothCoordinator}.
+     */
+    private BluetoothCoordinator bluetoothCoordinator;
 
     /**
-     * Contains found bluetooth beacons.
-     * TODO update jdoc
+     * Fetches the device mapping JSON file from {@link JsonFetcher#DEVICE_MAPPING_URL}.
      */
-    private Beacon nearestDevice;
-    public Map<String, String> deviceUrlMapping = new HashMap<>();
+    private JsonFetcher jsonFetcher;
 
-    private Snackbar searchInfo;
+    /**
+     * The {@link WebView} to show the webpage in.
+     */
+    private WebView                 webView;
+
+    /**
+     * The loading overlay.
+     */
+    private LinearLayout             loadingPanel;
+
+    /**
+     * List of statuses to show in th eloading panel.
+     */
+    private ArrayList<TextView>     statusTexts;
+
+    /**
+     * Snackbar to show
+     */
+    private Snackbar snackbar;
 
 
     @Override
@@ -76,40 +100,37 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.webView = (WebView) findViewById(R.id.panel_display);
-        this.loadingPanel = (FrameLayout) findViewById(R.id.panel_loading);
+        this.loadingPanel = (LinearLayout) findViewById(R.id.panel_loading);
+
+        this.statusTexts = new ArrayList<>();
 
         this.webView.setWebViewClient(new CustomWebViewClient());
 
-        new JsonFetcher(this).execute(DEVICE_MAPPING_URL);
+        checkInternetAndFetchDeviceMapping();
 
-        AsyncTask asyncTask = new AsyncTask() {
-            @Override
-            protected Object doInBackground(Object[] objects) {
-                requestPermissions();
-                enableBle();
-                return null;
-            }
-        };
-        asyncTask.execute();
+        this.bluetoothCoordinator = new BluetoothCoordinator(this);
+        this.bluetoothCoordinator.scan();
 
     }
 
     /**
-     * Runtime request for "dangerous" coarse location permission.
-     * Only request if not already requested.
+     * Checks whether this device has internet access and if so, continues to fetch
+     * the neccessary beacon mapping.
      */
-    private void requestPermissions() {
-        if(Build.VERSION.SDK_INT >= 23) {
-            int granted = 0;
-            for (String perm : NEEDED_PERMISSIONS) {
-                if (this.checkSelfPermission(perm) == PackageManager.PERMISSION_GRANTED) {
-                    granted++;
+    private void checkInternetAndFetchDeviceMapping() {
+
+        if(Utils.isNetworkAvailable(this)) {
+            this.jsonFetcher = new JsonFetcher(this);
+            this.jsonFetcher.execute();
+        } else {
+            Dialogs.noInternetDialog(this, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    checkInternetAndFetchDeviceMapping();
                 }
-            }
-            if (granted < NEEDED_PERMISSIONS.length) {
-                this.requestPermissions(NEEDED_PERMISSIONS, REQUEST_PERMISSIONS);
-            }
+            });
         }
+
     }
 
     @Override
@@ -121,31 +142,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * TODO jdoc
+     * Start scan when bluetooth has been enabled.
      */
-    private void enableBle() throws RuntimeException {
-
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        this.bluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (this.bluetoothAdapter == null) {
-            throw new RuntimeException("Bluetooth is not supported by this device.");
-        }
-        if (!this.bluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        } else {
-            scanBleBeacons();
-        }
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_ENABLE_BT:
-                scanBleBeacons();
+            case BluetoothCoordinator.REQUEST_ENABLE_BT:
+                this.bluetoothCoordinator.scan();
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
@@ -153,90 +156,154 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * TODO jdoc
+     * Shows the mapped webpage in the {@link #webView}.
      */
-    private void scanBleBeacons() {
+    public void displayPage() {
 
-        // show scan info
-        MainActivity.this.searchInfo = Snackbar.make(findViewById(R.id.layout_root),
-                R.string.start_ble_search, Snackbar.LENGTH_INDEFINITE);
-        MainActivity.this.searchInfo.show();
+        final String mappedUrl = this.jsonFetcher.getDeviceUrlMapping().get(this.bluetoothCoordinator.getNearestDevice().getAddress());
 
-        if (Build.VERSION.SDK_INT >= 21) { // android lollipop and higher
-            this.bluetoothAdapter.getBluetoothLeScanner().startScan(new ScanCallback() {
-                @Override
-                @TargetApi(21)
-                public void onScanResult(int callbackType, ScanResult result) {
+        // only load if beacon is in mapping and not already loaded
+        if (mappedUrl != null && !mappedUrl.equals(this.webView.getOriginalUrl())) {
+            MainActivity.this.postLoadingStatus(R.string.found_device_page_loading);
 
-                    Beacon newBeacon = new Beacon(result.getDevice().getAddress(), result.getRssi());
-                    if(MainActivity.this.nearestDevice == null || newBeacon.compareTo(MainActivity.this.nearestDevice) > 0) {
-                        MainActivity.this.nearestDevice = newBeacon;
-                        Log.i("SCAN RESULT", "address = " + result.getDevice().getAddress() + ", rssi = " + result.getRssi());
-
-                        displayPage();
+            if(Utils.isNetworkAvailable(MainActivity.this)) {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        MainActivity.this.webView.loadUrl(mappedUrl);
                     }
-                    super.onScanResult(callbackType, result);
-                }
-            });
-        } else {
-            this.bluetoothAdapter.startLeScan(new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
-                    bluetoothDevice.connectGatt(MainActivity.this, false, new BluetoothGattCallback() {
-                        @Override
-                        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                }, 4000);
 
-                            Beacon newBeacon = new Beacon(bluetoothDevice.getAddress(), rssi);
-                            if(MainActivity.this.nearestDevice.compareTo(newBeacon) > 0) {
-                                MainActivity.this.nearestDevice = newBeacon;
-                                Log.i("SCAN RESULT", "address = " + bluetoothDevice.getAddress() + ", rssi = " + rssi);
+            } else {
+                Dialogs.noInternetDialog(this, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        MainActivity.this.displayPage();
+                    }
+                });
+            }
 
-                                displayPage();
-                            }
-                            super.onReadRemoteRssi(gatt, rssi, status);
-                        }
-                    });
-                }
-            });
         }
 
     }
 
     /**
-     * TODO jdoc
+     * Shows a {@link Snackbar} to the user with the specified content.
      */
-    private void displayPage() {
+    public void showSnackbar(final int stringId) {
 
-        // TODO check if mapping has been fetched
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.snackbar = Snackbar.make(findViewById(R.id.layout_root),
+                        getString(stringId), Snackbar.LENGTH_INDEFINITE);
+                MainActivity.this.snackbar.show();
+                Utils.snackbarUndismissable(MainActivity.this.snackbar);
+            }
+        });
 
-        final String mappedUrl = this.deviceUrlMapping.get(this.nearestDevice.getAddress());
-        if (mappedUrl != null) {
-            MainActivity.this.searchInfo.setText(R.string.found_device_page_loading);
-
-            this.webView.loadUrl(mappedUrl);
-        }
-
-    }
-
-    public Map<String, String> getDeviceUrlMapping() {
-        return this.deviceUrlMapping;
     }
 
     /**
-     * TODO jdoc
+     * Hides {@link #snackbar}.
+     */
+    public void hideSnackbar() {
+
+        if (this.snackbar == null) {
+            return;
+        }
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                MainActivity.this.snackbar.dismiss();
+            }
+        });
+
+    }
+
+    /**
+     * See {@link #postLoadingStatus(int, boolean)}.
+     * Shortcut method. Does not clear previous statuses.
+     */
+    public void postLoadingStatus(final int stringId) {
+        postLoadingStatus(stringId, false);
+    }
+
+    /**
+     * Show the loading panel and set the status text shown.
+     * @param stringId The string resource if id to be shown.
+     * @param clear Whether to clear previous statuses.
+     */
+    public void postLoadingStatus(final int stringId, final boolean clear) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                if(clear) {
+                    for (TextView t : MainActivity.this.statusTexts) {
+                        ((LinearLayout) t.getParent()).removeView(t);
+                    }
+                }
+
+                MainActivity.this.loadingPanel.setVisibility(View.VISIBLE);
+
+                TextView text = new TextView(MainActivity.this);
+                text.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.loading_text));
+                text.setGravity(Gravity.CENTER_HORIZONTAL);
+                text.setText(getString(stringId));
+
+                final int padding = (int) getResources().getDimension(R.dimen.default_margin);
+                text.setPadding(padding, 0, padding, 0);
+
+                for (TextView t : MainActivity.this.statusTexts) {
+                    t.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.loading_text_subtle));
+                }
+
+                MainActivity.this.statusTexts.add(text);
+                MainActivity.this.loadingPanel.addView(text);
+            }
+        });
+    }
+
+    /**
+     * TODO
+     * @param key the key to check
+     * @return
+     */
+    public boolean mappingContainsKey(String key) {
+        return this.jsonFetcher.getDeviceUrlMapping().containsKey(key);
+    }
+
+    /**
+     * Custom client for the webview to handle errors etc coming form the {@link WebView}.
      */
     public class CustomWebViewClient extends WebViewClient {
 
+        /**
+         * Hide the loading panel when the page is fully loaded.
+         * @param view See {@link WebViewClient#onPageFinished(WebView, String)}
+         * @param url See {@link WebViewClient#onPageFinished(WebView, String)}
+         */
         @Override
         public void onPageFinished(WebView view, String url) {
-            MainActivity.this.searchInfo.dismiss();
             MainActivity.this.loadingPanel.setVisibility(View.GONE);
             super.onPageFinished(view, url);
         }
 
+        /**
+         * Show an error to the user if a page could not be loaded.
+         * @param view See {@link WebViewClient#onReceivedError(WebView, WebResourceRequest, WebResourceError)}
+         * @param request See {@link WebViewClient#onReceivedError(WebView, WebResourceRequest, WebResourceError)}
+         * @param error See {@link WebViewClient#onReceivedError(WebView, WebResourceRequest, WebResourceError)}
+         */
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            super.onReceivedError(view, request, error); // TODO show error
+            Log.e(this.getClass().getSimpleName(), "Could not load webpage: " + error.toString());
+
+            Dialogs.errorPrompt(MainActivity.this, "Could not load webpage.\n" + error.toString()); // TODO dialog
+
+            super.onReceivedError(view, request, error);
         }
     }
 
