@@ -27,7 +27,22 @@ class BluetoothCoordinator {
      * Request code to enable bluetooth.
      */
     public static final int        REQUEST_ENABLE_BT = 1;
-    //private static final int BT_SCAN_TIMEOUT = 60000;
+
+    /**
+     * The interval in milliseconds to scan for bluetooth devices.
+     * See {@link #BT_SCAN_INTERVAL}.
+     *
+     * TODO implement logic
+     */
+    private static final int BT_SCAN_DURATION = 5000;
+
+    /**
+     * The interval in milliseconds to start scanning for bluetooth devices.
+     * See {@link #BT_SCAN_DURATION}.
+     *
+     * TODO implement logic
+     */
+    private static final int BT_SCAN_INTERVAL = 10000;
 
     /**
      * Ref to main activity to update UI etc.
@@ -75,7 +90,6 @@ class BluetoothCoordinator {
         }
     };
 
-
     public BluetoothCoordinator(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
@@ -87,7 +101,7 @@ class BluetoothCoordinator {
     public void scan() {
 
         // bind receiver to bluetooth state change events
-        this.mainActivity.registerReceiver(this.btEventReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));// TODO reenable
+        this.mainActivity.registerReceiver(this.btEventReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
 
         AsyncTask asyncTask = new AsyncTask() {
             @Override
@@ -188,5 +202,19 @@ class BluetoothCoordinator {
     public Beacon getNearestDevice() {
         return nearestDevice;
     }
+
+    /*private pause() {
+
+        if (Build.VERSION.SDK_INT >= 21) { // android lollipop and higher
+
+            this.bluetoothAdapter.getBluetoothLeScanner().
+
+        } else {
+
+            this.bluetoothAdapter.stopLeScan(leScanCallbackOld);
+
+        }
+
+    }*/
 
 }
