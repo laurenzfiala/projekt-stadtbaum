@@ -59,7 +59,6 @@ import java.util.TreeSet;
 /**
  * This is the main screen of the app.
  * It loads the device mapping (for beacons) and shows the corresponding webpage in a webview.
- * TODO cleanup
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -84,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout             loadingPanel;
 
     /**
-     * List of statuses to show in th eloading panel.
+     * List of statuses to show in the loading panel.
      */
     private ArrayList<TextView>     statusTexts;
 
@@ -170,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        MainActivity.this.webView.loadUrl(mappedUrl);
+                        MainActivity.this.webView.loadUrl("http://google.com");
                     }
                 }, 4000);
 
@@ -305,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
 
             super.onReceivedError(view, request, error);
         }
+
     }
 
 }
