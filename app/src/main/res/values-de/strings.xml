@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Projekt Stadtbaum</string>
+    <string name="app_name">Stadtbäume</string>
     <string name="found_device_page_loading">Lade beacon Information...</string>
-    <string name="intro_sponsored_by">Gefördert von</string>
+    <string name="intro_partners">In Kooperation mit</string>
     <string name="start_ble_search">Suche nach beacons in der Nähe...</string>
     <string name="permreq_explanation">Please allow this app to access and control low accuracy location and Bluetooth while opened. If not, this app cann\'t function.</string>
     <string name="permreq_btn_yes">Erlauben</string>
@@ -12,4 +12,6 @@
     <string name="error_no_internet">Keine Internetverbindung verfügbar.\nBitte schalten Sie WLAN oder mobile Daten ein um fortzufahren.</string>
     <string name="retry">Wiederholen</string>
     <string name="info_stop_scan_ble_off">Suche nach Beacons wurde durch Deaktivierung von Bluetooth beendet.</string>
+    <string name="intro_partners_addendum">und 12 Schulen aus Deutschland, Österreich und Ungarn</string>
+    <string name="intro_subtitle">Ein Sparkling Science Projekt</string>
 </resources>

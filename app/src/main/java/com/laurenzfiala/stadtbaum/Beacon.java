@@ -4,7 +4,7 @@ import android.support.annotation.NonNull;
 
 /**
  * Created by Laurenz Fiala on 19/09/2017.
- * TODO jdoc
+ * DAO to hold data for a single bluetooth beacon.
  */
 public class Beacon implements Comparable<Beacon> {
 

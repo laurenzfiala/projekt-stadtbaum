@@ -22,14 +22,14 @@ import java.util.Map;
 
 /**
  * Created by Laurenz Fiala on 19/09/2017.
- * TODO jdoc
+ * Fetches the beacon mapping from in internet, parses and provides it to the other app components.
  */
 class JsonFetcher extends AsyncTask<Void, Void, Void> {
 
     /**
      * URL at which the JSON mapping file should be accessible.
      */
-    private static final String     DEVICE_MAPPING_URL = "https://laurenzfiala.github.io/projekt-stadtbaum/webresources/devicemapping.json";
+    private static final String     DEVICE_MAPPING_URL = "https://laurenzfiala.github.io/projekt-stadtbaum-web/devicemapping.json";
 
     /**
      * The reference to the main activity for UI tasks and response.

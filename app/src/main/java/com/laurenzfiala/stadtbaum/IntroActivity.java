@@ -53,7 +53,7 @@ public class IntroActivity extends AppCompatActivity {
     }
 
     /**
-     * TODO jdoc
+     * Starts timer to show the main activity.
      */
     private void startIntroTimer() {
 

@@ -29,7 +29,7 @@ class BluetoothCoordinator {
     public static final int        REQUEST_ENABLE_BT = 1;
 
     /**
-     * The interval in milliseconds to scan for bluetooth devices.
+     * The interval in milliseconds to scan for bluetooth beacons.
      * See {@link #BT_SCAN_INTERVAL}.
      *
      * TODO implement logic
@@ -37,7 +37,7 @@ class BluetoothCoordinator {
     private static final int BT_SCAN_DURATION = 5000;
 
     /**
-     * The interval in milliseconds to start scanning for bluetooth devices.
+     * The interval in milliseconds to start scanning for bluetooth beacons.
      * See {@link #BT_SCAN_DURATION}.
      *
      * TODO implement logic
@@ -55,7 +55,7 @@ class BluetoothCoordinator {
     private BluetoothAdapter bluetoothAdapter;
 
     /**
-     * Holds the nearest bluetooth device that is also present
+     * Holds the nearest bluetooth beacon that is also present
      * in the device mapping.
      */
     private Beacon nearestDevice;
@@ -95,7 +95,7 @@ class BluetoothCoordinator {
     }
 
     /**
-     * Starts routines in a seperate task for UI responsiveness.
+     * Starts routines in a separate task for UI responsiveness.
      * If neccessary, enables Bluetooth and starts scanning for BLE devices.
      */
     public void scan() {
@@ -143,7 +143,7 @@ class BluetoothCoordinator {
      */
     private void scanBleBeacons() {
 
-        this.mainActivity.postLoadingStatus(R.string.start_ble_search, true);
+        this.mainActivity.postLoadingStatus(R.string.start_ble_search);
 
         if (Build.VERSION.SDK_INT >= 21) { // android lollipop and higher
 

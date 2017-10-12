@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">Project Urban Tree</string>
+    <string name="app_name">Urban Trees</string>
     <string name="start_ble_search">Searching for beacons nearby...</string>
     <string name="found_device_page_loading">Loading beacon information...</string>
-    <string name="intro_sponsored_by">Sponsored by</string>
+    <string name="intro_partners">In cooperation with</string>
     <string name="permreq_explanation">Please allow this app to access and control low accuracy location while opened.\nIf you don\'t, this app can\'t function.</string>
     <string name="permreq_btn_yes">Allow Location</string>
     <string name="close_app">Close App</string>
@@ -11,4 +11,6 @@
     <string name="error_no_internet">No internet connection is available.\nTurn on WIFI or data service to continue.</string>
     <string name="retry">Retry</string>
     <string name="info_stop_scan_ble_off">Stopped scanning for beacons because Bluetooth has been turned off.</string>
+    <string name="intro_subtitle">A Sparkling Science Project</string>
+    <string name="intro_partners_addendum">and 12 schools from Austria, Germany and Hungary</string>
 </resources>

@@ -83,9 +83,9 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout             loadingPanel;
 
     /**
-     * List of statuses to show in the loading panel.
+     * Status to show in the loading panel.
      */
-    private ArrayList<TextView>     statusTexts;
+    private TextView     statusText;
 
     /**
      * Snackbar to show
@@ -100,10 +100,10 @@ public class MainActivity extends AppCompatActivity {
 
         this.webView = (WebView) findViewById(R.id.panel_display);
         this.loadingPanel = (LinearLayout) findViewById(R.id.panel_loading);
-
-        this.statusTexts = new ArrayList<>();
+        this.statusText = (TextView) findViewById(R.id.loading_status_text);
 
         this.webView.setWebViewClient(new CustomWebViewClient());
+        this.webView.getSettings().setJavaScriptEnabled(true);
 
         checkInternetAndFetchDeviceMapping();
 
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        MainActivity.this.webView.loadUrl("http://google.com");
+                        MainActivity.this.webView.loadUrl(mappedUrl);
                     }
                 }, 4000);
 
@@ -222,51 +222,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * See {@link #postLoadingStatus(int, boolean)}.
-     * Shortcut method. Does not clear previous statuses.
+     * Show the loading panel and set the status text shown.
+     * @param stringId The string resource id to be shown.
      */
     public void postLoadingStatus(final int stringId) {
-        postLoadingStatus(stringId, false);
-    }
-
-    /**
-     * Show the loading panel and set the status text shown.
-     * @param stringId The string resource if id to be shown.
-     * @param clear Whether to clear previous statuses.
-     */
-    public void postLoadingStatus(final int stringId, final boolean clear) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-
-                if(clear) {
-                    for (TextView t : MainActivity.this.statusTexts) {
-                        ((LinearLayout) t.getParent()).removeView(t);
-                    }
-                }
-
                 MainActivity.this.loadingPanel.setVisibility(View.VISIBLE);
-
-                TextView text = new TextView(MainActivity.this);
-                text.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.loading_text));
-                text.setGravity(Gravity.CENTER_HORIZONTAL);
-                text.setText(getString(stringId));
-
-                final int padding = (int) getResources().getDimension(R.dimen.default_margin);
-                text.setPadding(padding, 0, padding, 0);
-
-                for (TextView t : MainActivity.this.statusTexts) {
-                    t.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.loading_text_subtle));
-                }
-
-                MainActivity.this.statusTexts.add(text);
-                MainActivity.this.loadingPanel.addView(text);
+                MainActivity.this.statusText.setText(MainActivity.this.getString(stringId));
             }
         });
     }
 
     /**
-     * TODO
+     * True when the address exists in the mapping, false otherwise.
+     * See {@link JsonFetcher}.
      * @param key the key to check
      * @return
      */

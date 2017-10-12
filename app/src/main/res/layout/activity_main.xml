@@ -37,9 +37,18 @@
                 android:layout_height="@dimen/loading_dimensions"
                 android:layout_marginBottom="@dimen/default_margin"
                 android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_weight="0" />
+
+            <TextView
+                android:id="@+id/loading_status_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="0"
-                android:indeterminateTint="@color/colorPrimaryDark"
-                android:indeterminateTintMode="multiply" />
+                android:gravity="center"
+                android:text="@string/start_ble_search"
+                android:textColor="@android:color/background_dark" />
+            <!--android:indeterminateTint="@color/colorPrimaryDark"
+            android:indeterminateTintMode="multiply" />-->
 
         </LinearLayout>
 
